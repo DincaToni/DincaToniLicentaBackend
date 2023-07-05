@@ -3,6 +3,7 @@ const router = require("express").Router();
 const { spawn } = require("child_process");
 let Quizz = require("../models/quizz.model");
 let QuestionSet = require("../models/questionSet.model");
+const { resolve } = require("path");
 
 /*let options = {
     pythonPath: 'D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe',
@@ -44,8 +45,8 @@ router.route("/addQuizz").post(async (req, res, next) => {
                     qs.questions.push(res);
                 }
             })*/
-
-        const childPython = await spawn(
+            console.log("test")
+        const childPython = spawn(
           "D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe",
           [
             `${__dirname}../../../DincaToniLicentaPyth/main.py`,
@@ -54,17 +55,23 @@ router.route("/addQuizz").post(async (req, res, next) => {
             qs.nrOfQuestions,
           ]
         );
-        await childPython.stdout.on("data", (data) => {
-          console.log(`stdout: ${data}`);
-          qs.questions.push(...data);
+        await new Promise(resolve => {
+          childPython.stdout.on("data", (data) => {
+            console.log(`stdout: ${data}`);
+            const modifyData = data.toString().substring(2, data.length - 4);
+            const questions = modifyData.split('\'\, \'');
+            qs.questions.push(...questions);
+          });
+          childPython.stderr.on("data", (data) => {
+            console.log(`stderr: ${data}`);
+          });
+          childPython.on("close", (code) => {
+            console.log(`child process exited with code ${code}`);
+            resolve(code);
+          });
+          console.log("almost exited python file");
         });
-        await childPython.stderr.on("data", (data) => {
-          console.log(`stderr: ${data}`);
-        });
-        await childPython.on("close", (code) => {
-          console.log(`child process exited with code ${code}`);
-        });
-
+        console.log("exited python file");
         await qs.save();
         newQuizz.questionSets.push(qs);
       })
