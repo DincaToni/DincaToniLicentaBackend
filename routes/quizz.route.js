@@ -1,27 +1,80 @@
 const router = require("express").Router();
-let Quizz = require('../models/quizz.model');
+//const {PythonShell} = require('python-shell');
+const { spawn } = require("child_process");
+let Quizz = require("../models/quizz.model");
+let QuestionSet = require("../models/questionSet.model");
 
-router.route('/')
-.get(async (req, res, next)=>{
-    try {
-        const quizz = await Quizz.find();
-        res.json(quizz);
-    } catch (error) {
-        return next(error)
-    }
+/*let options = {
+    pythonPath: 'D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe',
+    scriptPath: `${__dirname}../../../DincaToniLicentaPyth`,
+    args: []
+}*/
+
+router.route("/").get(async (req, res, next) => {
+  try {
+    const quizz = await Quizz.find().populate("questionSets");
+    res.json(quizz);
+  } catch (error) {
+    return next(error);
+  }
 });
 
-router.route('/addQuizz')
-.post(async (req, res, next) => {
-    try {
-        const {quizzTitle, inputPrompt} = req.body;
-        const newQuizz = new Quizz({quizzTitle, inputPrompt});
-        newQuizz.creationDate = Date.now();
-        await newQuizz.save();
-        res.send('Quizz added');
-    } catch (error) {
-        return next(error);
-    }
-})
+router.route("/addQuizz").post(async (req, res, next) => {
+  try {
+    const { quizzTitle, inputPrompt, questionSets } = req.body;
+    const newQuizz = new Quizz({ quizzTitle, inputPrompt });
+    //options.args.push(newQuizz.inputPrompt)
+    await Promise.all(
+      questionSets.map(async (set) => {
+        let qs = new QuestionSet({
+          setName: set.setName,
+          isSetNameHidden: set.isSetNameHidden,
+          questionType: set.questionType,
+          nrOfQuestions: set.nrOfQuestions,
+          isQuestionOrderRandomised: set.isQuestionOrderRandomised,
+        });
+        /*options.args[1] = qs.questionType;
+            options.args[2] = qs.nrOfQuestions;
+            console.log(options)
+            await PythonShell.run('main.py', options, (err, res) => {
+                if(err) console.log(err);
+                if(res) {
+                    console.log("e res");
+                    console.log(res);
+                    qs.questions.push(res);
+                }
+            })*/
+
+        const childPython = await spawn(
+          "D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe",
+          [
+            `${__dirname}../../../DincaToniLicentaPyth/main.py`,
+            newQuizz.inputPrompt,
+            qs.questionType,
+            qs.nrOfQuestions,
+          ]
+        );
+        await childPython.stdout.on("data", (data) => {
+          console.log(`stdout: ${data}`);
+          qs.questions.push(...data);
+        });
+        await childPython.stderr.on("data", (data) => {
+          console.log(`stderr: ${data}`);
+        });
+        await childPython.on("close", (code) => {
+          console.log(`child process exited with code ${code}`);
+        });
+
+        await qs.save();
+        newQuizz.questionSets.push(qs);
+      })
+    );
+    newQuizz.creationDate = Date.now();
+    await newQuizz.save();
+    res.send("Quizz added");
+  } catch (error) {
+    return next(error);
+  }
+});
 
 module.exports = router;

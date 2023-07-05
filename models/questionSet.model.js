@@ -13,7 +13,7 @@ const questionSetSchema = new Schema({
     },
     questionType:{
         type: String,
-        enum: ['Grilă', 'Advărat/Fals', 'Întrebare Liberă', 'Completează spațiul liber'],
+        enum: ['Grilă', 'Advărat/Fals', 'Intrebare Libera', 'Completează spațiul liber'],
         required: true
     },
     nrOfQuestions:{
