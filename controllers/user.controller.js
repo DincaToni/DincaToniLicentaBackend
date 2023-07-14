@@ -7,11 +7,12 @@ const authUser = async (req, res, next) => {
 
     const user = await User.findOne({ email: email });
     if (user && (await user.matchPasswords(password))) {
-      generateToken(res, user._id);
+      let token = generateToken(res, user._id);
       res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
+        token: token,
       });
     } else {
       res.status(401);
@@ -35,11 +36,12 @@ const registerUser = async (req, res, next) => {
 
     const newUser = await User.create({ name, email, password });
     if (newUser) {
-      generateToken(res, newUser._id);
+      let token = generateToken(res, newUser._id);
       res.status(201).json({
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
+        token: token,
       });
     } else {
       res.status(400);
