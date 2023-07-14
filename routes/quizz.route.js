@@ -4,6 +4,7 @@ const { spawn } = require("child_process");
 let Quizz = require("../models/quizz.model");
 let QuestionSet = require("../models/questionSet.model");
 const { resolve } = require("path");
+const { getQuizById } = require("../controllers/quiz.controler");
 
 /*let options = {
     pythonPath: 'D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe',
@@ -45,7 +46,7 @@ router.route("/addQuizz").post(async (req, res, next) => {
                     qs.questions.push(res);
                 }
             })*/
-            console.log("test")
+        console.log("test");
         const childPython = spawn(
           "D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe",
           [
@@ -55,11 +56,11 @@ router.route("/addQuizz").post(async (req, res, next) => {
             qs.nrOfQuestions,
           ]
         );
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           childPython.stdout.on("data", (data) => {
             console.log(`stdout: ${data}`);
             const modifyData = data.toString().substring(2, data.length - 4);
-            const questions = modifyData.split('\'\, \'');
+            const questions = modifyData.split("', '");
             qs.questions.push(...questions);
           });
           childPython.stderr.on("data", (data) => {
@@ -83,5 +84,7 @@ router.route("/addQuizz").post(async (req, res, next) => {
     return next(error);
   }
 });
+
+router.route("/:id").get(getQuizById);
 
 module.exports = router;
