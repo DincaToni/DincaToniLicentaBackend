@@ -46,7 +46,7 @@ router.route("/addQuizz").post(async (req, res, next) => {
                     qs.questions.push(res);
                 }
             })*/
-        console.log("test");
+        console.log("test: " + qs.questionType);
         const childPython = spawn(
           "D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe",
           [
