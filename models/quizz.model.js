@@ -1,28 +1,32 @@
-const mongoose = require ('mongoose');
+const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const quizzSchema = new Schema({
-    quizzTitle:{
-        type: String,
-        maxLength: 50,
-        required: true
+const quizzSchema = new Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
-    inputPrompt:{
-        type: String,
-        required: true
+    quizzTitle: {
+      type: String,
+      maxLength: 50,
+      required: true,
     },
-    creationDate:{
-        type: Date,
-        required: true
+    inputPrompt: {
+      type: String,
+      required: true,
     },
-    questionSets: [{
+    questionSets: [
+      {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'QuestionSet'
-    }],
+        ref: "QuestionSet",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
-})
-
-const Quizz = mongoose.model('Quizz', quizzSchema);
+const Quizz = mongoose.model("Quizz", quizzSchema);
 
 module.exports = Quizz;
