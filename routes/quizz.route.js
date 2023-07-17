@@ -88,6 +88,6 @@ router.route("/addQuizz").post(async (req, res, next) => {
   }
 });
 
-router.route("/:id").get(getQuizById);
+router.route("/quiz/:id").get(getQuizById);
 
 module.exports = router;
