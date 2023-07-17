@@ -12,9 +12,13 @@ const { getQuizById } = require("../controllers/quiz.controler");
     args: []
 }*/
 
-router.route("/").get(async (req, res, next) => {
+router.route("/:uid").get(async (req, res, next) => {
   try {
-    const quizz = await Quizz.find().populate("questionSets");
+    const { uid } = req.params;
+    const quizz = await Quizz.find()
+      .where("user")
+      .equals(uid)
+      .populate("questionSets");
     res.json(quizz);
   } catch (error) {
     return next(error);
@@ -23,8 +27,8 @@ router.route("/").get(async (req, res, next) => {
 
 router.route("/addQuizz").post(async (req, res, next) => {
   try {
-    const { quizzTitle, inputPrompt, questionSets } = req.body;
-    const newQuizz = new Quizz({ quizzTitle, inputPrompt });
+    const { user, quizzTitle, inputPrompt, questionSets } = req.body;
+    const newQuizz = new Quizz({ user, quizzTitle, inputPrompt });
     //options.args.push(newQuizz.inputPrompt)
     await Promise.all(
       questionSets.map(async (set) => {
@@ -77,7 +81,6 @@ router.route("/addQuizz").post(async (req, res, next) => {
         newQuizz.questionSets.push(qs);
       })
     );
-    newQuizz.creationDate = Date.now();
     await newQuizz.save();
     res.send("Quizz added");
   } catch (error) {
