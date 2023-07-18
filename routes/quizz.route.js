@@ -4,7 +4,10 @@ const { spawn } = require("child_process");
 let Quizz = require("../models/quizz.model");
 let QuestionSet = require("../models/questionSet.model");
 const { resolve } = require("path");
-const { getQuizById } = require("../controllers/quiz.controler");
+const {
+  getQuizById,
+  removeQuizById,
+} = require("../controllers/quiz.controler");
 
 /*let options = {
     pythonPath: 'D:/Programs/Anaconda/envs/DincaToniLicenta-env/python.exe',
@@ -88,6 +91,6 @@ router.route("/addQuizz").post(async (req, res, next) => {
   }
 });
 
-router.route("/quiz/:id").get(getQuizById);
+router.route("/quiz/:id").get(getQuizById).delete(removeQuizById);
 
 module.exports = router;

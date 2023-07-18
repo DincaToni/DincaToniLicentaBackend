@@ -19,4 +19,20 @@ const getQuizById = async (req, res, next) => {
   }
 };
 
-module.exports = { getQuizById };
+const removeQuizById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    quiz = await Quizz.findById(id);
+    if (quiz) {
+      await Quizz.findByIdAndDelete(id);
+      res.sendStatus(200);
+    } else {
+      res.status(404);
+      throw new Error("quiz does not exist");
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { getQuizById, removeQuizById };
