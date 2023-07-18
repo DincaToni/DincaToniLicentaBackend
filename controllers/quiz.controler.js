@@ -9,6 +9,7 @@ const getQuizById = async (req, res, next) => {
         _id: id,
         quizzTitle: quiz.quizzTitle,
         questionSets: quiz.questionSets,
+        updatedAt: quiz.updatedAt,
       });
     } else {
       res.status(404);
